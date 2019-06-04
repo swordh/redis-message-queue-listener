@@ -35,7 +35,15 @@ function readConfig() {
                             family: 4,
                             password: 'auth',
                             db: 0
-                        }
+                        },
+                        subscribe: [
+                            'channel/1',
+                            'channel/2'
+                        ],
+                        pattern: [
+                            'channel/*',
+                            '*/1'
+                        ]
                     },
                     null,
                     2
@@ -64,20 +72,41 @@ function connect() {
             console.error(err)
         })
 
+        sub.on('message', (channel, message) => {
+            var date = new Date()
+            console.log('')
+            console.log('============ ' + dateFormat(date, 'isoDateTime') + ' ============')
+            console.log('Channel')
+            console.log(channel)
+            console.log('Message')
+            console.log(message)
+        })
+        
+        if (config.subscribe) {
+            config.subscribe.forEach(item => {
+                sub.subscribe(item)    
+            })    
+        }
+        
+    
         sub.on('pmessage', (pattern, channel, message) => {
             var date = new Date()
             console.log('')
-            console.log(
-                '============ ' +
-                    dateFormat(date, 'isoDateTime') +
-                    ' ============'
-            )
+            console.log('============ ' + dateFormat(date, 'isoDateTime') + ' ============')
+            console.log('Pattern')
+            console.log(pattern)
             console.log('Channel')
             console.log(channel)
             console.log('Message')
             console.log(message)
         })
 
-        sub.psubscribe('*')
+        if (config.pattern) {
+            config.pattern.forEach(item => {
+                sub.psubscribe(item)    
+            })    
+        }
+        
+        
     })
 }
